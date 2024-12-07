@@ -1,0 +1,8 @@
+-- START --
+
+CREATE DATABASE GTS;
+GO
+
+USE GTS;
+GO
+
