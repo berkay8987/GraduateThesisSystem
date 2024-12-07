@@ -24,9 +24,13 @@ VALUES
 	('Onur Ulaþ', 'Canpolat');
 
 INSERT INTO
-	Professors ()
+	Professors (prof_title, prof_name, prof_surname)
 VALUES
-	();
+	('Prof.', 'Volkan', 'Tunalý'),
+	('', 'Oruç Raif', 'Önvüral'),
+	('', 'Muhammed Burak', 'Alver'),
+	('', 'Berkay', 'Aþýkuzun'),
+	('', 'Uður', 'Taþ');
 
 INSERT INTO
 	Universities (university_name)
@@ -59,11 +63,11 @@ VALUES
 INSERT INTO 
 	Supervisors
 VALUES	
-	('Prof. Volkan', 'Tunalý', 1),
-	('Prof. Oruç Raif', 'Önvüral', 2),
-	('Prof. Muhammed Burak', 'Alver', 3),
-	('Prof. Berkay', 'Aþýkuzun', 4),
-	('Prof. Uður', 'Taþ', 5);
+	(1, 1), -- Volkan Tunalý is the supervisor of thesis 1
+	(2, 2), -- Oruç Raif Önvüral is the supervisor of thesis 2
+	(3, 3), -- Muhammed Burak Alver is the supervisor of thesis 2
+	(4, 4), -- Oruç Raif Önvüral is the supervisor of thesis 2
+	(5, 5); -- Oruç Raif Önvüral is the supervisor of thesis 2
 
 INSERT INTO 
 	CoSupervisors

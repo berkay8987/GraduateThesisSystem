@@ -36,6 +36,7 @@ CREATE TABLE Authors (
 
 CREATE TABLE Professors (
 	prof_id INT IDENTITY(1,1) PRIMARY KEY,
+	prof_title VARCHAR(255) CHECK (prof_title IN ('Prof.', 'Dr.', 'Yrd.', 'MSc.', 'Ph.D.')),
 	prof_name VARCHAR(255) NOT NULL,
 	prof_surname VARCHAR(255) NOT NULL,
 );
