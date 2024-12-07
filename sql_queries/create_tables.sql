@@ -105,7 +105,7 @@ CREATE TABLE Thesis_Supervisors (
 CREATE TABLE Topics (
 	topic_id INT IDENTITY(1,1) PRIMARY KEY,
 	topic_name VARCHAR(255) NOT NULL,
-);
+);ee
 
 CREATE TABLE ThesisTopics (
 	thesis_id INT NOT NULL,
