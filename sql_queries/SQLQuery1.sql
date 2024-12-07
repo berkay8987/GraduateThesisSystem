@@ -1,3 +1,2 @@
 -- START --
 
-CREATE DATABASE GTS;
