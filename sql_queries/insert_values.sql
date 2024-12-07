@@ -30,16 +30,16 @@ VALUES
 	('MSc.', 'Oruç Raif', 'Önvüral'),
 	('Ph.D.', 'Muhammed Burak', 'Alver'),
 	('Yrd.', 'Berkay', 'Aþýkuzun'),
-	('Dr.', 'Uður', 'Taþ'),
+	('Dr.', 'Uður', 'Taþ');
 
 INSERT INTO
 	Universities (university_name)
 VALUES
-	('Maltepe Üniversitesi'),
-	('Marmara Üniversitesi'),
-	('Ýstanbul Teknik Üniversitesi'),
-	('Boðaziçi Üniversitesi'),
-	('Yýldýz Teknik Üniversitesi');
+	('Maltepe University'),
+	('Marmara University'),
+	('Ýstanbul Teknik University'),
+	('Boðaziçi University'),
+	('Yýldýz Teknik University');
 
 INSERT INTO 
 	Institutes (institute_name, university_id)
