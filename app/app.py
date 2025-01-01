@@ -28,6 +28,22 @@ def index():
 def theses():
     """ Get theses from database, show it to the user. Make them be able to add, edit or delete a thesis """
 
+    cursor.execute("SELECT university_id, university_name FROM Universities")
+    universities = cursor.fetchall()
+
+    cursor.execute("SELECT institute_id, institute_name FROM Institutes")
+    institutes = cursor.fetchall()
+
+    cursor.execute("SELECT author_id, CONCAT(author_name, ' ', author_surname) FROM Authors")
+    authors = cursor.fetchall()
+
+    cursor.execute("SELECT topic_id, topic_name FROM Topics")
+    topics = cursor.fetchall()
+
+    # For supervisors, and cosupervisors
+    cursor.execute("SELECT prof_id, CONCAT(prof_title, ' ', prof_name, ' ', prof_surname) FROM Professors")
+    professors = cursor.fetchall()
+
     cursor.execute("""
         SELECT 
             T.thesis_id,
@@ -82,7 +98,7 @@ def theses():
     cols = [desc[0] for desc in cursor.description]
     detailed_theses = [dict(zip(cols, c)) for c in detailed_content]
 
-    return render_template("theses.html", detailed_theses=detailed_theses)
+    return render_template("theses.html", detailed_theses=detailed_theses, universities=universities, institutes=institutes, authors=authors, topics=topics, professors=professors)
 
 @app.route("/edit_thesis/<int:id>", methods=["POST"])
 def edit_thesis(id):
@@ -97,20 +113,221 @@ def edit_thesis(id):
 
     return render_template("index.html") 
 
+@app.route("/add_thesis", methods=["POST"])
+def add_thesis():
+    title = request.form.get("title")
+    abstract = request.form.get("abstract")
+    author = request.form.get("author")
+    supervisor = request.form.get("supervisors")
+    cosupervisor = request.form.get("cosupervisors")
+    uni = request.form.get("uni")
+    ins = request.form.get("ins")
+    type = request.form.get("type")
+    num_pages = request.form.get("num_pages")
+    language = request.form.get("language")
+    topics = request.form.get("topics")
+    keywords = request.form.get("keywords")
+    submission_date = request.form.get("submission_date")
+    # get year from date
+    year = submission_date[:4]
+
+    tt = f"""
+        <h4>{title}</h4>
+        <h4>{abstract}</h4>
+        <h4>{author}</h4>
+        <h4>{supervisor}</h4>
+        <h4>{cosupervisor}</h4>
+        <h4>{uni}</h4>
+        <h4>{ins}</h4>
+        <h4>{type}</h4>
+        <h4>{num_pages}</h4>
+        <h4>{language}</h4>
+        <h4>{topics}</h4>
+        <h4>{keywords}</h4>
+        <h4>{submission_date}</h4>
+        <h4>{year}</h4>
+    """
+
+    # Update Theses table
+    cursor.execute("""  
+        INSERT INTO Theses
+            (title, abstract, author_id, year, type, university_id, institute_id, page_num, language, submission_date) 
+        VALUES 
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    """, (title, abstract, author, year, type, uni, ins, num_pages, language, submission_date))
+    cursor.commit()
+
+    cursor.execute("SELECT TOP 1 thesis_id FROM Theses ORDER BY thesis_id DESC;")
+    thesis_id = cursor.fetchall()[0][0]
+
+
+    # Update Supervisors
+    cursor.execute("""
+        INSERT INTO Supervisors
+            (prof_id, thesis_id)
+        VALUES
+            (?, ?);
+    """, (supervisor, thesis_id))
+    cursor.commit()
+
+    # Update CoSupervisors
+    cursor.execute("""
+        INSERT INTO CoSupervisors
+            (prof_id, thesis_id)
+        VALUES
+            (?, ?);
+    """, (cosupervisor, thesis_id))
+    cursor.commit()
+
+    # Update ThesisTopics
+    cursor.execute("""
+        INSERT INTO ThesisTopics
+            (thesis_id, topic_id)
+        VALUES
+            (?, ?);
+    """, (thesis_id, topics))
+    cursor.commit()
+
+    # Updating ThesisKeywords is gonna be different.
+    # Since we might have multiple keywords associated with 1 thesis, there will be a loop
+    # And we have to add the keywords into Keywords table (if that keyword doesn't exist)
+    
+    # Check if keyword exist
+    keywords = [k.strip() for k in keywords.split(",")]
+
+    for i in range(len(keywords)):
+        cursor.execute("SELECT keyword_id FROM Keywords WHERE keyword = ?", (keywords[i]))
+        res = cursor.fetchall()
+
+        if res == []:
+            # That means keyword doesn't exist, we first have to add it to Keywords table then add it to ThesisKeywords.
+            cursor.execute("INSERT INTO Keywords (keyword) VALUES (?)", (keywords[i]))
+            cursor.commit()
+
+            # Get new keyword_id
+            cursor.execute("SELECT keyword_id FROM Keywords WHERE keyword = ?", (keywords[i]))
+            keyword_id = cursor.fetchall()[0][0]
+            print(keyword_id)
+
+            # Now update ThesisKeywords
+            cursor.execute("INSERT INTO ThesisKeywords (thesis_id, keyword_id) VALUES (?, ?)", (thesis_id, keyword_id))
+            cursor.commit()
+        else:
+            # That means keyword does exist, so we can directly add it to ThesisKeywords
+            cursor.execute("INSERT INTO ThesisKeywords (thesis_id, keyword_id) VALUES (?, ?)", (thesis_id, res[0][0]))
+            cursor.commit()
+
+    return tt + f"<h4>New Thesis ID: {thesis_id}</h4>"
+
+@app.route("/delete_thesis/<int:id>", methods=["POST"])
+def delete_thesis(id):
+    # In order to delete a thesis, we have to delete from other tables as well.
+
+    # Delete from Supervisors
+    cursor.execute("DELETE FROM Supervisors WHERE thesis_id = ?", id)
+    cursor.commit()
+
+    # Delete from CoSupervisors
+    cursor.execute("DELETE FROM CoSupervisors WHERE thesis_id = ?", id)
+    cursor.commit()
+    
+    # Delete from ThesisKeywords
+    cursor.execute("DELETE FROM ThesisKeywords WHERE thesis_id = ?", id)
+    cursor.commit()
+
+    # Delete from ThesisTopics
+    cursor.execute("DELETE FROM ThesisTopics WHERE thesis_id = ?", id)
+    cursor.commit()
+
+    cursor.execute("DELETE FROM Theses WHERE thesis_id = ?", id)
+    return render_template("index.html")
+
 @app.route("/persons")
 def persons():
     return render_template("persons.html")
 
 @app.route("/universities")
 def universities():
-    return render_template("universities.html")
+    cursor.execute("SELECT university_id, university_name FROM Universities")
+    content = cursor.fetchall()
+    cols = ["university_id", "university_name"]
+    universities = [dict(zip(cols, c)) for c in content]
+    return render_template("universities.html", universities=universities)
+
+@app.route("/edit_university/<int:id>", methods=["POST"])
+def edit_university(id):
+    name = request.form.get("name")
+    cursor.execute("UPDATE Universities SET university_name = ? WHERE university_id = ?", (name, id))
+    return render_template("index.html")
+
+@app.route("/delete_university/<int:id>", methods=["POST"])
+def delete_university(id):
+    cursor.execute("DELETE FROM Universities WHERE university_id = ?", id)
+    return render_template("index.html")
+
+@app.route("/add_university", methods=["POST"])
+def add_university():
+    name = request.form.get("name")
+
+    # Check if already exists
+    cursor.execute("SELECT university_id FROM Universities WHERE university_name = ?", (name))
+    uni = cursor.fetchall()
+
+    if uni:
+        return "<h1>That University Already Exists!</h1>"
+    
+    cursor.execute("INSERT INTO Universities (university_name) VALUES (?)", name)
+    cursor.commit()
+
+    return render_template("index.html")
 
 @app.route("/institutes")
 def institutes():
-    return render_template("institutes.html")
+    cursor.execute("SELECT university_id, university_name FROM Universities")
+    content = cursor.fetchall()
+    cols = ["university_id", "university_name"]
+    universities = [dict(zip(cols, c)) for c in content]
+
+    cursor.execute("""
+        SELECT 
+            I.institute_id,
+            I.institute_name,
+            U.university_name
+        FROM 
+            Institutes I
+        JOIN 
+            Universities U ON I.university_id = U.university_id
+    """)
+    content = cursor.fetchall()
+    cols = ["institute_id", "institute_name", "university_name"]
+    institutes = [dict(zip(cols, c)) for c in content]
+    return render_template("institutes.html", institutes=institutes, universities=universities)
+
+@app.route("/add_institute", methods=["POST"])
+def add_institute():
+    name = request.form.get("name")
+    uni_id = request.form.get("uni")
+
+    cursor.execute("INSERT INTO Institutes (institute_name, university_id) VALUES (?, ?)", (name, uni_id))
+    cursor.commit()
+    return render_template("index.html")
+
+@app.route("/delete_institute/<int:id>", methods=["POST"])
+def delete_institute(id):
+    cursor.execute("DELETE FROM Institutes WHERE institute_id = ?", id)
+    cursor.commit()
+    return render_template("index.html")
+
+@app.route("/edit_institute/<int:id>", methods=["POST"])
+def edit_institute(id):
+    name = request.form.get("name")
+    cursor.execute("UPDATE Institutes SET institute_name = ? WHERE institute_id = ?", (name, id))
+    cursor.commit()
+    return render_template("index.html")
 
 @app.route("/topics")
 def topics():
+    
     return render_template("topics.html")
 
 @app.route("/search")
