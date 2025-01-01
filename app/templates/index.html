@@ -6,9 +6,8 @@
     <title>GTS APP</title>
 </head>
 <body>
-    <h1>Hello!</h1>
-    <h1>Hello!</h1>
-    <h1>Hello!</h1>
-    <h1>Hello!</h1>
+    {% for name in names %}
+        <li>{{ name }}</li>
+    {% endfor %}
 </body>
 </html>
