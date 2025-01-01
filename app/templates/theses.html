@@ -2,7 +2,7 @@
 
 {% block body %}
 
-    <div class="container mt-5" style="max-width: 1500px;">
+    <div class="container mt-5 mb-5" style="max-width: 1500px;">
 
         <div class="header-container">
             <h2>All Theses</h2>
@@ -61,19 +61,116 @@
                                 </button>
                             </div>
                             <div class="modal-body">
+                                <form action="/add_thesis" method="post">
 
+                                    <div class="form-group">
+                                        <label class="form-label" for="title">Title:</label>
+                                        <input class="form-control" type="text" id="title" name="title" required>
+                                    </div>
 
+                                    <div class="form-group">
+                                        <label class="form-label" for="abstract">Abstract:</label>
+                                        <textarea class="form-control"  id="abstract" name="abstract" required></textarea>
+                                    </div>
 
+                                    <div class="form-group">
+                                        <label class="form-label" for="author">Author:</label>
+                                        <select class="form-control" id="author" name="author" required>
+                                            {% for author in authors %}
+                                                <option value="{{ author[0] }}" selected>{{ author[1] }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="language">Supervisors:</label>
+                
+                                        <select class="form-control" id="supervisors" name="supervisors">
+                                        {% for prof in professors %}
+                                            <option value="{{ prof[0] }}">{{ prof[1] }}</option>
+                                        {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="language">Cosupervisors:</label>
+                                        <select class="form-control" id="cosupervisors" name="cosupervisors">
+                                        {% for prof in professors %}
+                                            <option value="{{ prof[0] }}">{{ prof[1] }}</option>
+                                        {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="uni">University:</label>
+                                        <select class="form-control" id="uni" name="uni" required>
+                                            {% for uni in universities %}
+                                                <option value="{{ uni[0] }}">{{ uni[1] }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="ins">Institute:</label>
+                                        <select class="form-control" id="ins" name="ins" required>
+                                            {% for ins in institutes %}
+                                                <option value="{{ ins[0] }}">{{ ins[1] }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                
+                                    <div class="form-group">
+                                        <label class="form-label" for="type">Type:</label>
+                                        <select class="form-control" id="type" name="type" required>
+                                            <option value="Master">Master</option>
+                                            <option value="Doctorate">Doctorate</option>
+                                            <option value="Specialization in Medicine">Specialization in Medicine</option>
+                                            <option value="Proficiency in Art">Proficiency in Art</option>
+                                        </select>
+                                    </div>
+                
+                                    <div class="form-group">
+                                        <label class="form-label" for="num_pages">Number of Pages:</label>
+                                        <input class="form-control" type="number" id="num_pages" name="num_pages" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="language">Language:</label>
+                                        <select class="form-control" id="language" name="language" required>
+                                            <option value="Turkish">Turkish</option>
+                                            <option value="English">English</option>
+                                            <option value="French">French</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="topics">Subject Topics:</label>
+                                        <select class="form-control" id="topics" name="topics">
+                                        {% for topic in topics %}
+                                            <option value="{{ topic[0] }}">{{ topic[1] }}</option>
+                                        {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="keywords">Keywords:</label>
+                                        <input class="form-control" type="text" id="keywords" name="keywords">
+                                        <small>Please enter keywords separated by comma</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="submission_date">Submission Date:</label>
+                                        <input class="form-control" type="date" id="submission_date" name="submission_date" required>
+                                    </div>
+                
+                                    <div class="form-submit">
+                                        <input class="btn btn-secondary" type="submit" value="Submit">
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
-
-
-                
                 <!-- END OF NEW THESIS MODAL -->
-
-
 
                 <!-- DETAILS THESIS MODAL -->
                 <div class="modal fade" id="detailsThesisModal{{ thesis.thesis_id }}" tabindex="-1" role="dialog" aria-labelledby="detailsThesisModal{{ thesis.thesis_id }}" aria-hidden="true">
