@@ -20,11 +20,15 @@ cursor = conn.cursor()
 
 @app.route("/")
 def index():
+    """ Main page of the app """
     return render_template("index.html")
 
 @app.route("/theses")
 def theses():
-    return render_template("theses.html")
+    """ Get theses from database, show it to the user. Make them be able to add, edit or delete a thesis """
+    cursor.execute("SELECT * FROM Theses")
+    theses = cursor.fetchall()
+    return render_template("theses.html", theses=theses)
 
 @app.route("/persons")
 def persons():
