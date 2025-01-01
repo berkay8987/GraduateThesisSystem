@@ -6,7 +6,7 @@
 
         <div class="header-container">
             <h2>All Theses</h2>
-            <button href="#" class="btn btn-success">New Thesis</button>
+            <button href="#" class="btn btn-success" data-toggle="modal" data-target="#newThesisModal">New Thesis</button>
         </div>
 
         <table class="table table-striped">
@@ -24,16 +24,15 @@
 
             <tbody>
 
-                {% for thesis in theses %}
+                {% for thesis in detailed_theses %}
 
                     <tr>
                         <td> {{ thesis.thesis_id }} </td>
-                        <td> {{ thesis.title }} </td>
-                        <td> {{ thesis.abstract }} </td>
+                        <td> {{ thesis.thesis_title }} </td>
+                        <td> {{ thesis.thesis_abstract }} </td>
                         <td> {{ thesis.language }} </td>
                         <td> {{ thesis.submission_date }} </td>
                         <td> {{ thesis.page_num }} </td>
-                        
                         
                         <td>
                             <button class="btn btn-secondary" data-toggle="modal" data-target="#detailsThesisModal{{ thesis.thesis_id }}">Details</button>
@@ -51,6 +50,30 @@
                     </tr>
 
 
+                <!-- NEW THESIS MODAL -->
+                <div class="modal fade" id="newThesisModal" tabindex="-1" role="dialog" aria-labelledby="newThesisModal" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="newThesisModalLabel">Add New Thesis</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                
+                <!-- END OF NEW THESIS MODAL -->
+
+
 
                 <!-- DETAILS THESIS MODAL -->
                 <div class="modal fade" id="detailsThesisModal{{ thesis.thesis_id }}" tabindex="-1" role="dialog" aria-labelledby="detailsThesisModal{{ thesis.thesis_id }}" aria-hidden="true">
@@ -63,29 +86,27 @@
                                 </button>
                             </div>
                             <div class="modal-body">
-
                                 <div class="card">
                                     <div class="card-body">
-                                        <h5 class="card-title">{{ thesis.title }}</h5>
-                                        <h6 class="card-subtitle mb-2 text-muted">{{ thesis.author_id }}</h6>
-                                        <p class="card-text">{{ thesis.abstract}}</p>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item"><b>Supervisor:     </b>  {{ thesis.supervisor_id }}</li>
-                                            <li class="list-group-item"><b>Co-supervisor:  </b>  {{ thesis.cosupervisor_name }}</li>
-                                            <li class="list-group-item"><b>Type:           </b>  {{ thesis.type }}</li>
-                                            <li class="list-group-item"><b>University:     </b>  {{ thesis.university_id }}</li>
-                                            <li class="list-group-item"><b>Institute:      </b>  {{ thesis.institute_id }}</li>
+                                            <li class="list-group-item"><b>ThesisID:       </b>  {{ thesis.thesis_id }}</li>
+                                            <li class="list-group-item"><b>Title:          </b>  {{ thesis.thesis_title }}</li>
+                                            <li class="list-group-item"><b>Author:         </b>  {{ thesis.author_full_name }}</li>
+                                            <li class="list-group-item"><b>Description:    </b>  {{ thesis.thesis_abstract }}</li>
+                                            <li class="list-group-item"><b>Supervisor:     </b>  {{ thesis.supervisor_full_name }}</li>
+                                            <li class="list-group-item"><b>Co-supervisor:  </b>  {{ thesis.cosupervisor_full_name }}</li>
+                                            <li class="list-group-item"><b>Type:           </b>  {{ thesis.thesis_type }}</li>
+                                            <li class="list-group-item"><b>University:     </b>  {{ thesis.university_name }}</li>
+                                            <li class="list-group-item"><b>Institute:      </b>  {{ thesis.institute_name }}</li>
                                             <li class="list-group-item"><b>Submission Date:</b>  {{ thesis.submission_date }}</li>
                                             <li class="list-group-item"><b>Number of Pages:</b>  {{ thesis.page_num }}</li>
-                                            <li class="list-group-item"><b>Year:</b> {{ thesis.year }}</li>
+                                            <li class="list-group-item"><b>Year:           </b> {{ thesis.year }}</li>
                                             <li class="list-group-item"><b>Language:       </b> {{ thesis.language }}</li>
-                                            <li class="list-group-item"><b>Keywords:</b> {{ keywords|join(', ') }}</li>                    
-                                            <li class="list-group-item"><b>Topics:</b> {{ topics|join(', ') }}</li>                   
+                                            <li class="list-group-item"><b>Keywords:       </b> {{ thesis.thesis_keywords }}</li>                    
+                                            <li class="list-group-item"><b>Topics:         </b> {{ thesis.thesis_topics }}</li>                   
                                         </ul>
                                     </div>
                                 </div>
-                                
-
                             </div>
                         </div>
                     </div>
@@ -112,12 +133,12 @@
                                     
                                     <div class="form-group">
                                         <label for="form-label" for="title">Title: </label>
-                                        <input class="form-control" type="text" id="title" name="title" value="{{ thesis.title }}">
+                                        <input class="form-control" type="text" id="title" name="title" value="{{ thesis.thesis_title }}">
                                     </div>    
 
                                     <div class="form-group">
                                         <label for="form-label" for="description">Description: </label>
-                                        <input class="form-control" type="text" id="description" name="description" value="{{ thesis.abstract }}">
+                                        <input class="form-control" type="text" id="description" name="description" value="{{ thesis.thesis_abstract }}">
                                     </div>  
                                     
                                     <div class="form-group">
