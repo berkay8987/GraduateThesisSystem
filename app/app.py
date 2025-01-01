@@ -20,10 +20,7 @@ cursor = conn.cursor()
 
 @app.route("/")
 def index():
-    cursor.execute("SELECT CONCAT(author_name, ' ', author_surname) FROM Authors")
-    names = [name[0] for name in cursor.fetchall()]
-    print(names)
-    return render_template("index.html", names = names)
+    return render_template("index.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
