@@ -3,11 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
     <title>GTS APP</title>
 </head>
 <body>
-    {% for name in names %}
-        <li>{{ name }}</li>
-    {% endfor %}
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <a href="/" class="navbar-brand">Graduate Thesis System</a>
+        <ul class="navbar-nav">
+
+            <li class="nav-item">
+                <a href="/" class="nav-link text-light">Home</a>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle text-light" id="navbarDropdown" data-toggle="dropdown">Explore</a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a href="/theses" class="dropdown-item"><h5>Theses</h5></a>
+                    <a href="/persons" class="dropdown-item"><h5>Persons</h5></a>
+                    <a href="/universities" class="dropdown-item"><h5>Universities</h5></a>
+                    <a href="/institutes" class="dropdown-item"><h5>Institutes</h5></a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/" class="dropdown-item"><h4>Take me back home!</h4></a>
+                </div>
+            </li>
+            
+            <li class="nav-item">
+                <a href="/search" class="nav-link text-light">Search</a>
+            </li>
+            
+        </ul>
+
+        <div class="ml-auto d-flex">
+            <span class="navbar-text text-muted">
+                <i class="fas fa-copyright"></i> 2025 Graduate Thesis System
+            </span>
+
+            <a href="https://github.com/berkay8987/GraduateThesisSystem/blob/main/" class="nav-link" target="_blank">
+                <i class="fab fa-github fa-lg text-light"></i>
+            </a>
+        </div>
+
+    </nav>
+
+    <div class="content-container mt-5">
+        <h1>This is the Graduate Thesis System</h1>
+        <p>The Graduate Thesis System (GTS) is a comprehensive platform designed to help users explore, manage, and edit data related to theses, researchers, universities, and institutes. With its intuitive and user-friendly interface, GTS provides an efficient way to search, organize, and update academic resources, fostering collaboration and innovation in the research community. Whether you're looking to browse research topics, connect with experts, or maintain up-to-date records, GTS makes it simple and accessible.</p>
+    </div>
+    
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="content-container">
+                    <h1>View - GTS</h1>
+                    <p>Explore the Graduate Thesis System (GTS) and view available theses, researchers, universities, and institutes through an intuitive, user-friendly interface.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="content-container">
+                    <h1>Edit - GTS</h1>
+                    <p>Make changes to existing theses, researchers, universities, and institutes in the Graduate Thesis System (GTS), with easy-to-use editing tools for data management.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="content-container">
+                    <h1>Delete - GTS</h1>
+                    <p>Remove outdated or unnecessary theses, researchers, universities, and institutes from the Graduate Thesis System (GTS) with a streamlined deletion process.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <footer class="footer-custom text-light py-3 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2025 Graduate Thesis System. All rights reserved.</p>
+            <p>Designed and developed by Berkay Ateş, Alper Ege Öztürk, Evrim Çiçek, Ege Arda Tepetan.</p>
+        </div>
+    </footer>    
+
+    <!-- Optional JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </body>
 </html>
