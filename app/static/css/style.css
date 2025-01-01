@@ -29,7 +29,7 @@ body {
 }
 
 .footer-custom {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     width: 100%;
     background-color: #2c2c2c; /* Same as the darker part of the gradient */
@@ -37,4 +37,11 @@ body {
     font-size: 15px;
     line-height: 0.5;
     text-align: center
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between; /* Pushes header and button to opposite sides */
+    align-items: center; /* Vertically centers the items */
+    margin-bottom: 20px; /* Adds some space below the header */
 }

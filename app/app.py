@@ -27,7 +27,12 @@ def index():
 def theses():
     """ Get theses from database, show it to the user. Make them be able to add, edit or delete a thesis """
     cursor.execute("SELECT * FROM Theses")
-    theses = cursor.fetchall()
+    content = cursor.fetchall()
+
+    col = [desc[0] for desc in cursor.description]
+
+    theses = [dict(zip(col, c)) for c in content]
+
     return render_template("theses.html", theses=theses)
 
 @app.route("/persons")

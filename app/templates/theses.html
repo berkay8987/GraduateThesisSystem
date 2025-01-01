@@ -2,22 +2,177 @@
 
 {% block body %}
 
-    <div class="container mt-5">
-        <h1>TODO: Theses</h1>
-        <a href="#" class="btn btn-secondary">Add Thesis</a>
-        
-        <ul>
-            {% for thesis in theses %}
-                <li>
-                    {{ thesis }}
-                </li>
+    <div class="container mt-5" style="max-width: 1500px;">
 
-                <a href="#" class="btn btn-primary">Details</a>
-                <a href="#" class="btn btn-primary">Edit</a>
-                <a href="#" class="btn btn-primary">Delete</a>
-            {% endfor %}
-        </ul>
+        <div class="header-container">
+            <h2>All Theses</h2>
+            <button href="#" class="btn btn-success">New Thesis</button>
+        </div>
 
+        <table class="table table-striped">
+
+            <thead>
+                <tr>
+                    <th>ThesisID</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Language</th>
+                    <th>Date</th>
+                    <th>Page Count</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for thesis in theses %}
+
+                    <tr>
+                        <td> {{ thesis.thesis_id }} </td>
+                        <td> {{ thesis.title }} </td>
+                        <td> {{ thesis.abstract }} </td>
+                        <td> {{ thesis.language }} </td>
+                        <td> {{ thesis.submission_date }} </td>
+                        <td> {{ thesis.page_num }} </td>
+                        
+                        
+                        <td>
+                            <button class="btn btn-secondary" data-toggle="modal" data-target="#detailsThesisModal{{ thesis.thesis_id }}">Details</button>
+                        </td>
+
+                        <td>
+                            <button class="btn btn-secondary" data-toggle="modal" data-target="#editThesisModal{{ thesis.thesis_id }}">Edit</button>
+                        </td>
+
+                        <td>
+                            <button class="btn btn-danger" data-toggle="modal" data-target="#deleteThesisModal{{ thesis.thesis_id }}">Delete</button>
+                        </td>
+                        
+
+                    </tr>
+
+
+
+                <!-- DETAILS THESIS MODAL -->
+                <div class="modal fade" id="detailsThesisModal{{ thesis.thesis_id }}" tabindex="-1" role="dialog" aria-labelledby="detailsThesisModal{{ thesis.thesis_id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="detailsThesisModalLabel{{ thesis.thesis_id }}">Thesis Details</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ thesis.title }}</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">{{ thesis.author_id }}</h6>
+                                        <p class="card-text">{{ thesis.abstract}}</p>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item"><b>Supervisor:     </b>  {{ thesis.supervisor_id }}</li>
+                                            <li class="list-group-item"><b>Co-supervisor:  </b>  {{ thesis.cosupervisor_name }}</li>
+                                            <li class="list-group-item"><b>Type:           </b>  {{ thesis.type }}</li>
+                                            <li class="list-group-item"><b>University:     </b>  {{ thesis.university_id }}</li>
+                                            <li class="list-group-item"><b>Institute:      </b>  {{ thesis.institute_id }}</li>
+                                            <li class="list-group-item"><b>Submission Date:</b>  {{ thesis.submission_date }}</li>
+                                            <li class="list-group-item"><b>Number of Pages:</b>  {{ thesis.page_num }}</li>
+                                            <li class="list-group-item"><b>Year:</b> {{ thesis.year }}</li>
+                                            <li class="list-group-item"><b>Language:       </b> {{ thesis.language }}</li>
+                                            <li class="list-group-item"><b>Keywords:</b> {{ keywords|join(', ') }}</li>                    
+                                            <li class="list-group-item"><b>Topics:</b> {{ topics|join(', ') }}</li>                   
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END OF DETAILS THESIS MODAL -->
+
+                <!-- EDIT THESIS MODAL -->
+                <div class="modal fade" id="editThesisModal{{ thesis.thesis_id }}" tabindex="-1" role="dialog" aria-labelledby="editThesisModal{{ thesis.thesis_id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editThesisModalLabel{{ thesis.thesis_id }}">Edit Thesis</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="/edit_thesis/{{ thesis.thesis_id }}" method="post">
+
+                                    <div class="form-group">
+                                        <label for="form-label" for="thesis_id">ThesisID: </label>
+                                        <input class="form-control" type="number" id="thesis_id" name="thesis_id" value="{{ thesis.thesis_id }}" disabled>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="form-label" for="title">Title: </label>
+                                        <input class="form-control" type="text" id="title" name="title" value="{{ thesis.title }}">
+                                    </div>    
+
+                                    <div class="form-group">
+                                        <label for="form-label" for="description">Description: </label>
+                                        <input class="form-control" type="text" id="description" name="description" value="{{ thesis.abstract }}">
+                                    </div>  
+                                    
+                                    <div class="form-group">
+                                        <label for="form-label" for="language">Language: </label>
+                                        <select class="form-control" name="language" id="language">
+                                            <option value="Turkish" {% if thesis.language == "Turkish" %}selected{% endif %}>Turkish</option>
+                                            <option value="English" {% if thesis.language == "English" %}selected{% endif %}>English</option>
+                                            <option value="French" {% if thesis.language == "French" %}selected{% endif %}>French</option>
+                                        </select>
+                                    </div> 
+
+                                    <div class="form-group">
+                                        <label for="form-label" for="page_num">Page Count: </label>
+                                        <input class="form-control" type="number" id="page_num" name="page_num" value="{{ thesis.page_num }}">
+                                    </div> 
+                                    
+                                    <div class="form-submit">
+                                        <input class="btn btn-secondary" type="submit" value="Change">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END OF EDIT THESIS MODAL  -->
+
+                <!-- DELETE THESIS MODAL -->
+                <div class="modal fade" id="deleteThesisModal{{ thesis.thesis_id }}" tabindex="-1" role="dialog" aria-labelledby="deleteThesisModal{{ thesis.thesis_id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteThesisModalLabel{{ thesis.thesis_id }}">Delete Thesis</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to delete this thesis?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <form action="/delete_thesis/{{ thesis.thesis_id }}" method="post">
+                                    <input class="btn btn-danger" type="submit" value="Delete">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END OF DELETE THESIS MODAL  -->
+
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
 
