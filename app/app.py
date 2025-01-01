@@ -22,5 +22,25 @@ cursor = conn.cursor()
 def index():
     return render_template("index.html")
 
+@app.route("/theses")
+def theses():
+    return render_template("theses.html")
+
+@app.route("/persons")
+def persons():
+    return render_template("persons.html")
+
+@app.route("/universities")
+def universities():
+    return render_template("universities.html")
+
+@app.route("/institutes")
+def institutes():
+    return render_template("institutes.html")
+
+@app.route("/search")
+def search():
+    return render_template("search.html")
+
 if __name__ == "__main__":
     app.run(debug=True)
