@@ -42,6 +42,10 @@ def universities():
 def institutes():
     return render_template("institutes.html")
 
+@app.route("/topics")
+def topics():
+    return render_template("topics.html")
+
 @app.route("/search")
 def search():
     return render_template("search.html")
