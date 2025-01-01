@@ -2,8 +2,176 @@
 
 {% block body %}
 
-    <div class="container mt-5">
-        <h1>TODO: Institutes</h1>
+<div class="container mt-5 mb-5" style="max-width: 1500px;">
+
+    <div class="header-container">
+        <h2>All Institutes</h2>
+        <button href="#" class="btn btn-success" data-toggle="modal" data-target="#newInstituteModal">New Institute</button>
     </div>
+
+    <table class="table table-striped">
+
+        <thead>
+            <tr>
+                <th>InstituteID</th>
+                <th>Institute Name</th>
+                <th>University Name</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for ins in institutes %}
+
+                <tr>
+                    <td> {{ ins.institute_id }} </td>
+                    <td> {{ ins.institute_name }} </td>
+                    <td> {{ ins.university_name }} </td>
+
+                    <td>
+                        <button class="btn btn-secondary" data-toggle="modal" data-target="#detailsInstituteModal{{ ins.institute_id }}">Details</button>
+                    </td>
+
+                    <td>
+                        <button class="btn btn-secondary" data-toggle="modal" data-target="#editInstituteModal{{ ins.institute_id }}">Edit</button>
+                    </td>
+
+                    <td>
+                        <button class="btn btn-danger" data-toggle="modal" data-target="#deleteInstituteModal{{ ins.institute_id }}">Delete</button>
+                    </td>
+                    
+
+                </tr>
+
+
+            <!-- NEW INSTITUTE MODAL -->
+            <div class="modal fade" id="newInstituteModal" tabindex="-1" role="dialog" aria-labelledby="newInstituteModal" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="newInstituteModalLabel">Add New Institute</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="/add_institute" method="post">
+                                <div class="form-group">
+                                    <label class="form-label" for="name">Institute Name:</label>
+                                    <input class="form-control" type="text" id="name" name="name" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="uni">University:</label>
+                                    <select class="form-control" id="uni" name="uni" required>
+                                        {% for uni in universities %}
+                                            <option value="{{ uni.university_id }}">{{ uni.university_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-submit">
+                                    <input class="btn btn-secondary" type="submit" value="Submit">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END OF NEW INSTITUTE MODAL -->
+
+            <!-- DETAILS UNIVERSITY MODAL -->
+            <div class="modal fade" id="detailsInstituteModal{{ ins.institute_id }}" tabindex="-1" role="dialog" aria-labelledby="detailsInstituteModal{{ ins.institute_id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="detailsInstituteModalLabel{{ ins.institute_id }}">Institute Details</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="card">
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><b>InstituteID:    </b>  {{ ins.institute_id }}</li>
+                                        <li class="list-group-item"><b>Institute Name: </b>  {{ ins.institute_name }}</li>                
+                                        <li class="list-group-item"><b>University Name:</b>  {{ ins.university_name }}</li>                
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END OF DETAILS INSTITUTE MODAL -->
+
+            <!-- EDIT INSTITUTE MODAL -->
+            <div class="modal fade" id="editInstituteModal{{ ins.institute_id }}" tabindex="-1" role="dialog" aria-labelledby="editInstituteModal{{ ins.institute_id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editInstituteModalLabel{{ ins.institute_id }}">Edit Institute</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="/edit_institute/{{ ins.institute_id }}" method="post">
+
+                                <div class="form-group">
+                                    <label for="form-label" for="insitute_id">InstituteID: </label>
+                                    <input class="form-control" type="number" id="insitute_id" name="insitute_id" value="{{ ins.institute_id }}" disabled>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="form-label" for="name">Institute Name: </label>
+                                    <input class="form-control" type="text" id="name" name="name" value="{{ ins.institute_name}}">
+                                </div>   
+                                
+                                <div class="form-group">
+                                    <label for="form-label" for="uni_name">University Name: </label>
+                                    <input class="form-control" type="text" id="uni_name" name="uni_name" value="{{ ins.university_name}}" disabled>
+                                </div>    
+
+                                <div class="form-submit">
+                                    <input class="btn btn-secondary" type="submit" value="Change">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END OF EDIT INSTITUTE MODAL  -->
+
+            <!-- DELETE INSTITUTE MODAL -->
+            <div class="modal fade" id="deleteInstituteModal{{ ins.institute_id }}" tabindex="-1" role="dialog" aria-labelledby="deleteInsituteModal{{ ins.institute_id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteInstituteModalLabel{{ ins.institute }}">Delete Institute</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this institute?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <form action="/delete_institute/{{ ins.institute_id }}" method="post">
+                                <input class="btn btn-danger" type="submit" value="Delete">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END OF DELETE INSTITUTE MODAL  -->
+
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
 {% endblock %}
