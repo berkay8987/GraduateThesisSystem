@@ -111,7 +111,7 @@ def edit_thesis(id):
     cursor.execute("UPDATE Theses SET title = ?, abstract = ?, language = ?, page_num = ? WHERE thesis_id = ?", (title, abstract, language, page_num, id))
     cursor.commit()
 
-    return render_template("index.html") 
+    return render_template("result.html", response=f"Sucessfully Edited Thesis!", page="theses")
 
 @app.route("/add_thesis", methods=["POST"])
 def add_thesis():
@@ -217,7 +217,7 @@ def add_thesis():
             cursor.execute("INSERT INTO ThesisKeywords (thesis_id, keyword_id) VALUES (?, ?)", (thesis_id, res[0][0]))
             cursor.commit()
 
-    return tt + f"<h4>New Thesis ID: {thesis_id}</h4>"
+    return render_template("result.html", response=f"Sucessfully Added New Thesis => thesis_id = {thesis_id}", page="theses")
 
 @app.route("/delete_thesis/<int:id>", methods=["POST"])
 def delete_thesis(id):
@@ -240,11 +240,67 @@ def delete_thesis(id):
     cursor.commit()
 
     cursor.execute("DELETE FROM Theses WHERE thesis_id = ?", id)
-    return render_template("index.html")
+    return render_template("result.html", response=f"Sucessfully Deleted Theses => thesis_id {id}", page="theses")
 
 @app.route("/persons")
 def persons():
-    return render_template("persons.html")
+    cursor.execute("SELECT author_id, author_name, author_surname FROM Authors")
+    authors_content = cursor.fetchall()
+    cols = ["author_id", "author_name", "author_surname"]
+    authors = [dict(zip(cols, c)) for c in authors_content]
+
+    cursor.execute("SELECT prof_id, prof_title, prof_name, prof_surname FROM Professors")
+    professors_content = cursor.fetchall()
+    cols = ["prof_id", "prof_title", "prof_name", "prof_surname"]
+    professors = [dict(zip(cols, c)) for c in professors_content]
+
+    return render_template("persons.html", authors=authors, professors=professors)
+
+@app.route("/add_author", methods=["POST"])
+def add_author():
+    name = request.form.get("name")
+    surname = request.form.get("surname")
+    cursor.execute("INSERT INTO Authors (author_name, author_surname) VALUES (?,?)", (name, surname))
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Added New Author => {name} {surname} - {id}", page="persons")
+
+@app.route("/edit_author/<int:id>", methods=["POST"])
+def edit_author(id):
+    name = request.form.get("name")
+    surname = request.form.get("surname")
+    cursor.execute("UPDATE Authors SET author_name = ?, author_surname = ? WHERE author_id = ?", (name, surname, id))
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Edited Author => author_id = {id}", page="persons")
+
+@app.route("/delete_author/<int:id>", methods=["POST"])
+def delete_author(id):
+    cursor.execute("DELETE FROM Authors WHERE author_id = ?", id)
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Deleted Author => author_id = {id}", page="persons")
+
+@app.route("/add_prof", methods=["POST"])
+def add_prof():
+    title = request.form.get("title")
+    name = request.form.get("name")
+    surname = request.form.get("surname")
+    cursor.execute("INSERT INTO Professors (prof_title, prof_name, prof_surname) VALUES (?,?,?)", (title, name, surname))
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Added New Professor => {title} {name} {surname} - {id}", page="persons")
+
+@app.route("/edit_prof/<int:id>", methods=["POST"])
+def edit_prof(id):
+    title = request.form.get("title")
+    name = request.form.get("name")
+    surname = request.form.get("surname")
+    cursor.execute("UPDATE Professors SET prof_title = ?, prof_name = ?, prof_surname = ? WHERE prof_id = ?", (title, name, surname, id))
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Edited Professor => prof_id = {id}", page="persons")
+
+@app.route("/delete_prof/<int:id>", methods=["POST"])
+def delete_prof(id):
+    cursor.execute("DELETE FROM Professors WHERE prof_id = ?", id)
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Deleted Professor => prof_id = {id}", page="persons")
 
 @app.route("/universities")
 def universities():
@@ -258,12 +314,12 @@ def universities():
 def edit_university(id):
     name = request.form.get("name")
     cursor.execute("UPDATE Universities SET university_name = ? WHERE university_id = ?", (name, id))
-    return render_template("index.html")
+    return render_template("result.html", response=f"Sucessfully Edited University => university_id = {id}", page="universities")
 
 @app.route("/delete_university/<int:id>", methods=["POST"])
 def delete_university(id):
     cursor.execute("DELETE FROM Universities WHERE university_id = ?", id)
-    return render_template("index.html")
+    return render_template("result.html", response=f"Sucessfully Deleted University => university_id = {id}", page="universities")
 
 @app.route("/add_university", methods=["POST"])
 def add_university():
@@ -279,7 +335,7 @@ def add_university():
     cursor.execute("INSERT INTO Universities (university_name) VALUES (?)", name)
     cursor.commit()
 
-    return render_template("index.html")
+    return render_template("result.html", response=f"Sucessfully Added New University => {name} - {id}", page="universities")
 
 @app.route("/institutes")
 def institutes():
@@ -310,25 +366,57 @@ def add_institute():
 
     cursor.execute("INSERT INTO Institutes (institute_name, university_id) VALUES (?, ?)", (name, uni_id))
     cursor.commit()
-    return render_template("index.html")
+    return render_template("result.html", response=f"Sucessfully Added New Institute => {name}, uni_id={id} - {id}", page="institutes")
 
 @app.route("/delete_institute/<int:id>", methods=["POST"])
 def delete_institute(id):
     cursor.execute("DELETE FROM Institutes WHERE institute_id = ?", id)
     cursor.commit()
-    return render_template("index.html")
+    return render_template("result.html", response=f"Sucessfully Deleted Institute => institute_id = {id}", page="institutes")
 
 @app.route("/edit_institute/<int:id>", methods=["POST"])
 def edit_institute(id):
     name = request.form.get("name")
     cursor.execute("UPDATE Institutes SET institute_name = ? WHERE institute_id = ?", (name, id))
     cursor.commit()
-    return render_template("index.html")
+    return render_template("result.html", response=f"Sucessfully Edited Institute => institute_id = {id}", page="institutes")
 
 @app.route("/topics")
 def topics():
-    
-    return render_template("topics.html")
+    cursor.execute("SELECT topic_id, topic_name FROM Topics")
+    content = cursor.fetchall()
+    cols = ["topic_id", "topic_name"]
+    topics = [dict(zip(cols, c)) for c in content]
+    return render_template("topics.html", topics=topics)
+
+@app.route("/add_topic", methods=["POST"])
+def add_topic():
+    name = request.form.get("name")
+
+    # Check if exists
+    cursor.execute("SELECT topic_id FROM Topics WHERE topic_name = ?", name)
+    res = cursor.fetchall()
+
+    if res:
+        return render_template("result.html", response=f"Failed to Add Topic, '{name}' already exists!", page="topics", error=True)
+
+    # If not, add
+    cursor.execute("INSERT INTO Topics (topic_name) VALUES (?)", name)
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Added New Topic => {name} - {id}", page="topics")
+
+@app.route("/delete_topic/<int:id>", methods=["POST"])
+def delete_topic(id):
+    cursor.execute("DELETE FROM Topics WHERE topic_id = ?", id)
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Deleted Topic => topic_id = {id}", page="topics")
+
+@app.route("/edit_topic/<int:id>", methods=["POST"])
+def edit_topic(id):
+    name = request.form.get("name")
+    cursor.execute("UPDATE Topics SET topic_name = ? WHERE topic_id = ?", (name, id))
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Edited Topic => topic_id = {id}", page="topics")
 
 @app.route("/search")
 def search():
