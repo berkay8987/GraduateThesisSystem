@@ -2,8 +2,363 @@
 
 {% block body %}
 
-    <div class="container mt-5">
-        <h1>TODO: Persons</h1>
+<div class="container mt-5 mb-5" style="max-width: 1500px;">
+
+    <div class="row">
+        <!-- Left Part -->
+        <div class="col-md-6">
+            <div class="header-container">
+                <h2>All Authors</h2>
+                <button href="#" class="btn btn-success" data-toggle="modal" data-target="#newAuthorModal">New Author</button>
+            </div>
+
+            <table class="table table-striped">
+
+                <thead>
+                    <tr>
+                        <th>AuthorID</th>
+                        <th>Author Name</th>
+                        <th>Author Surname</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for author in authors %}
+
+                        <tr>
+                            <td> {{ author.author_id }} </td>
+                            <td> {{ author.author_name }} </td>
+                            <td> {{ author.author_surname }} </td>
+
+                            <td>
+                                <button class="btn btn-secondary" data-toggle="modal" data-target="#detailsAuthorModal{{ author.author_id }}">Details</button>
+                            </td>
+
+                            <td>
+                                <button class="btn btn-secondary" data-toggle="modal" data-target="#editAuthorModal{{ author.author_id }}">Edit</button>
+                            </td>
+
+                            <td>
+                                <button class="btn btn-danger" data-toggle="modal" data-target="#deleteAuthorModal{{ author.author_id }}">Delete</button>
+                            </td>
+
+                        </tr>
+
+                    <!-- NEW AUTHOR MODAL -->
+                    <div class="modal fade" id="newAuthorModal" tabindex="-1" role="dialog" aria-labelledby="newAuthorModal" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="newAuthorModalLabel">Add New Author</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/add_author" method="post">
+                                        <div class="form-group">
+                                            <label class="form-label" for="name">Author Name:</label>
+                                            <input class="form-control" type="text" id="name" name="name" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label" for="surname">Author Surname:</label>
+                                            <input class="form-control" type="text" id="surname" name="surname" required>
+                                        </div>
+
+                                        <div class="form-submit">
+                                            <input class="btn btn-secondary" type="submit" value="Submit">
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END OF NEW AUTHOR MODAL -->
+
+                    <!-- DETAILS AUTHOR MODAL -->
+                    <div class="modal fade" id="detailsAuthorModal{{ author.author_id }}" tabindex="-1" role="dialog" aria-labelledby="detailsAuthorModal{{ author.author_id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="detailsAuthorModalLabel{{ author.author_id }}">Author Details</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item"><b>AuthorID:      </b>  {{ author.author_id }}</li>
+                                                <li class="list-group-item"><b>Author Name:   </b>  {{ author.author_name }}</li>                
+                                                <li class="list-group-item"><b>Author Surname:</b>  {{ author.author_surname }}</li>                
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END OF DETAILS AUTHOR MODAL -->
+
+                    <!-- EDIT AUTHOR MODAL -->
+                    <div class="modal fade" id="editAuthorModal{{ author.author_id }}" tabindex="-1" role="dialog" aria-labelledby="editAuthorModal{{ author.author_id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editAuthorModalLabel{{ author.author_id }}">Edit Author</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/edit_author/{{ author.author_id }}" method="post">
+
+                                        <div class="form-group">
+                                            <label for="form-label" for="author_id">AuthorID: </label>
+                                            <input class="form-control" type="number" id="author_id" name="author_id" value="{{ author.author_id }}" disabled>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="form-label" for="name">Author Name: </label>
+                                            <input class="form-control" type="text" id="name" name="name" value="{{ author.author_name}}">
+                                        </div>    
+
+                                        <div class="form-group">
+                                            <label for="form-label" for="surname">Author Surname: </label>
+                                            <input class="form-control" type="text" id="surname" name="surname" value="{{ author.author_surname}}">
+                                        </div>  
+
+                                        <div class="form-submit">
+                                            <input class="btn btn-secondary" type="submit" value="Change">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END OF EDIT AUTHOR MODAL  -->
+
+                    <!-- DELETE AUTHOR MODAL -->
+                    <div class="modal fade" id="deleteAuthorModal{{ author.author_id }}" tabindex="-1" role="dialog" aria-labelledby="deleteAuthorModal{{ author.author_id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteAuthorModalLabel{{ author.author_id }}">Delete Author</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to delete this author?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <form action="/delete_author/{{ author.author_id }}" method="post">
+                                        <input class="btn btn-danger" type="submit" value="Delete">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END OF DELETE AUTHOR MODAL  -->
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Right Part -->
+        <div class="col-md-6">
+            <div class="header-container">
+                <h2>All Professors</h2>
+                <button href="#" class="btn btn-success" data-toggle="modal" data-target="#newProfModal">New Professor</button>
+            </div>
+
+            <table class="table table-striped">
+
+                <thead>
+                    <tr>
+                        <th>ProfID</th>
+                        <th>Prof Title</th>
+                        <th>Prof Name</th>
+                        <th>Prof Surname</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for prof in professors %}
+
+                        <tr>
+                            <td> {{ prof.prof_id }} </td>
+                            <td> {{ prof.prof_title }} </td>
+                            <td> {{ prof.prof_name }} </td>
+                            <td> {{ prof.prof_surname }} </td>
+
+                            <td>
+                                <button class="btn btn-secondary" data-toggle="modal" data-target="#detailsProfModal{{ prof.prof_id }}">Details</button>
+                            </td>
+
+                            <td>
+                                <button class="btn btn-secondary" data-toggle="modal" data-target="#editProfModal{{ prof.prof_id }}">Edit</button>
+                            </td>
+
+                            <td>
+                                <button class="btn btn-danger" data-toggle="modal" data-target="#deleteProfModal{{ prof.prof_id }}">Delete</button>
+                            </td>
+
+                        </tr>
+
+                    <!-- NEW PROFESSOR MODAL -->
+                    <div class="modal fade" id="newProfModal" tabindex="-1" role="dialog" aria-labelledby="newProfModal" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="newProfModalLabel">Add New Professor</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/add_prof" method="post">
+                                        <div class="form-group">
+                                            <label class="form-label" for="title">Professor Title:</label>
+                                            <select class="form-control" id="title" name="title" required>
+                                                {% for prof in professors %}
+                                                    <option value="{{ prof.prof_title }}">{{ prof.prof_title }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label" for="name">Professor Name:</label>
+                                            <input class="form-control" type="text" id="name" name="name" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label" for="surname">Professor Surname:</label>
+                                            <input class="form-control" type="text" id="surname" name="surname" required>
+                                        </div>
+
+                                        <div class="form-submit">
+                                            <input class="btn btn-secondary" type="submit" value="Submit">
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END OF NEW PROFESSOR MODAL -->
+
+                    <!-- DETAILS PROFESSOR MODAL -->
+                    <div class="modal fade" id="detailsProfModal{{ prof.prof_id }}" tabindex="-1" role="dialog" aria-labelledby="detailsProfModal{{ prof.prof_id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="detailsProfModalLabel{{ prof.prof_id }}">Professor Details</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item"><b>ProfesorID:        </b>  {{ prof.prof_id }}</li>
+                                                <li class="list-group-item"><b>Professor Title:   </b>  {{ prof.prof_title }}</li>                
+                                                <li class="list-group-item"><b>Professor Name:    </b>  {{ prof.prof_name }}</li>                
+                                                <li class="list-group-item"><b>Professor Surname: </b>  {{ prof.prof_surname }}</li>                
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END OF DETAILS PROFESSOR MODAL -->
+
+                    <!-- EDIT PROFESSOR MODAL -->
+                    <div class="modal fade" id="editProfModal{{ prof.prof_id }}" tabindex="-1" role="dialog" aria-labelledby="editProfModal{{ prof.prof_id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editProfModalLabel{{ prof.prof_id }}">Edit Professor</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/edit_prof/{{ prof.prof_id }}" method="post">
+
+                                        <div class="form-group">
+                                            <label for="form-label" for="prof_id">ProfessorID: </label>
+                                            <input class="form-control" type="number" id="prof_id" name="prof_id" value="{{ prof.prof_id }}" disabled>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label" for="title">Professor Title:</label>
+                                            <select class="form-control" id="title" name="title" required>
+                                                {% for prof in professors %}
+                                                    <option value="{{ prof.prof_title }}">{{ prof.prof_title }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>  
+
+                                        <div class="form-group">
+                                            <label for="form-label" for="name">Professor Name: </label>
+                                            <input class="form-control" type="text" id="name" name="name" value="{{ prof.prof_name}}">
+                                        </div>  
+
+                                        <div class="form-group">
+                                            <label for="form-label" for="surname">Professor Surname: </label>
+                                            <input class="form-control" type="text" id="surname" name="surname" value="{{ prof.prof_surname}}">
+                                        </div>  
+
+                                        <div class="form-submit">
+                                            <input class="btn btn-secondary" type="submit" value="Change">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END OF EDIT PROFESSOR MODAL  -->
+
+                    <!-- DELETE PROFESSOR MODAL -->
+                    <div class="modal fade" id="deleteProfModal{{ prof.prof_id }}" tabindex="-1" role="dialog" aria-labelledby="deleteProfModal{{ prof.prof_id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteProfModalLabel{{ prof.prof_id }}">Delete Professor</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to delete this professor?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <form action="/delete_prof/{{ prof.prof_id }}" method="post">
+                                        <input class="btn btn-danger" type="submit" value="Delete">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END OF DELETE PROFESSOR MODAL  -->
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+</div>
+
 
 {% endblock %}
