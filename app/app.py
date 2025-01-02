@@ -366,7 +366,7 @@ def add_institute():
 
     cursor.execute("INSERT INTO Institutes (institute_name, university_id) VALUES (?, ?)", (name, uni_id))
     cursor.commit()
-    return render_template("result.html", response=f"Sucessfully Added New Institute => {name}, uni_id={id} - {id}", page="institutes")
+    return render_template("result.html", response=f"Sucessfully Added New Institute => {name}", page="institutes")
 
 @app.route("/delete_institute/<int:id>", methods=["POST"])
 def delete_institute(id):
