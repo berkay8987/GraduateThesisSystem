@@ -1,0 +1,158 @@
+{% extends "index.html" %}
+
+{% block body %}
+<div class="container mt-5 mb-5" style="max-width: 1500px;">
+
+    <div class="header-container">
+        <h2>All Keywords</h2>
+        <button href="#" class="btn btn-success" data-toggle="modal" data-target="#newKeywordModal">New Keyword</button>
+    </div>
+
+    <table class="table table-striped">
+
+        <thead>
+            <tr>
+                <th>KeywordID</th>
+                <th>Keyword</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for keyword in keywords %}
+
+                <tr>
+                    <td> {{ keyword.keyword_id }} </td>
+                    <td> {{ keyword.keyword_name }} </td>
+
+                    <td>
+                        <button class="btn btn-secondary" data-toggle="modal" data-target="#detailsKeywordModal{{ keyword.keyword_id }}">Details</button>
+                    </td>
+
+                    <td>
+                        <button class="btn btn-secondary" data-toggle="modal" data-target="#editKeywordModal{{ keyword.keyword_id }}">Edit</button>
+                    </td>
+
+                    <td>
+                        <button class="btn btn-danger" data-toggle="modal" data-target="#deleteKeywordModal{{ keyword.keyword_id }}">Delete</button>
+                    </td>
+                    
+
+                </tr>
+
+
+            <!-- NEW KEYWORD MODAL -->
+            <div class="modal fade" id="newKeywordModal" tabindex="-1" role="dialog" aria-labelledby="newKeywordModal" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="newKeywordModalLabel">Add New Keyword</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="/add_keyword" method="post">
+                                <div class="form-group">
+                                    <label class="form-label" for="name">Keyword Name:</label>
+                                    <input class="form-control" type="text" id="name" name="name" required>
+                                </div>
+                                <div class="form-submit">
+                                    <input class="btn btn-secondary" type="submit" value="Submit">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END OF NEW KEYWORD MODAL -->
+
+            <!-- DETAILS KEYWORD MODAL -->
+            <div class="modal fade" id="detailsKeywordModal{{ keyword.keyword_id }}" tabindex="-1" role="dialog" aria-labelledby="detailsKeywordModal{{ keyword.keyword_id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="detailsKeywordModalLabel{{ keyword.keyword_id }}">Keyword Details</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="card">
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><b>KeywordID:    </b>  {{ keyword.keyword_id }}</li>
+                                        <li class="list-group-item"><b>Keyowrd Name: </b>  {{ keyword.keyword_name }}</li>                            
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END OF DETAILS KEYWORD MODAL -->
+
+            <!-- EDIT INSTITUTE MODAL -->
+            <div class="modal fade" id="editKeywordModal{{ keyword.keyword_id }}" tabindex="-1" role="dialog" aria-labelledby="editKeywordModal{{ keyword.keyword_id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editKeywordModalLabel{{ keyword.keyword_id }}">Edit Keyword</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="/edit_keyword/{{ keyword.keyword_id }}" method="post">
+
+                                <div class="form-group">
+                                    <label for="form-label" for="keyword_id">KeywordID: </label>
+                                    <input class="form-control" type="number" id="keyword_id" name="keyword_id" value="{{ keyword.keyword_id }}" disabled>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="form-label" for="name">Keyword Name: </label>
+                                    <input class="form-control" type="text" id="name" name="name" value="{{ keyword.keyword_name}}">
+                                </div>   
+                                
+                                <div class="form-submit">
+                                    <input class="btn btn-secondary" type="submit" value="Change">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END OF EDIT KEYWORD MODAL  -->
+
+            <!-- DELETE KEYWORD MODAL -->
+            <div class="modal fade" id="deleteKeywordModal{{ keyword.keyword_id }}" tabindex="-1" role="dialog" aria-labelledby="deleteKeywordModal{{ keyword.keyword_id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteKeywordModalLabel{{ keyword.keyword_id }}">Delete Keyword</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete this keyword?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <form action="/delete_keyword/{{ keyword.keyword_id }}" method="post">
+                                <input class="btn btn-danger" type="submit" value="Delete">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END OF DELETE KEYWORD MODAL  -->
+
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
