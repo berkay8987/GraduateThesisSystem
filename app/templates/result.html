@@ -6,7 +6,7 @@
             <div class="success content-container mt-5 animate__animated animate__fadeInUp">
                 <h2>Successful</h2>
                 <p>Your SQL query executed successfully.</p>
-                <p>{{response}}</p>
+                <h3>{{response}}</h3>
                 <p>You will be redirected to {{ page }} <span id="counter">3</span> second(s).</p>
                 <p><a href="/{{ page }}">Click here</a> to go back to the {{ page }} now.</p>
             </div>
@@ -14,7 +14,7 @@
             <div class="fail content-container mt-5 animate__animated animate__fadeInUp">
                 <h2>Failed</h2>
                 <p>There was an error executing your SQL query.</p>
-                <p>{{response}}</p>
+                <h3>{{response}}</h3>
                 <p>You will be redirected to {{ page }} <span id="counter">3</span> second(s).</p>
                 <p><a href="/{{ page }}">Click here</a> to go back to the {{ page }} now.</p>
             </div>
