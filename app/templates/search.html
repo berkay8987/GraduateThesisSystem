@@ -2,8 +2,187 @@
 
 {% block body %}
 
-    <div class="container mt-5">
-        <h1>TODO: Search</h1>
+<div class="container mt-5 mb-5" style="max-width: 1500px;">
+
+    <div class="header-container">
+        <h2>Search Thesis</h2>
     </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Search Criteria</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <form action="/search_by_thesis_id/" method="post" >
+                <tr>
+                    <td>Search By Thesis ID</td>
+                    <td>
+                        <div class="form-group">
+                            <input class="form-control" type="number" id="thesis_id" name="thesis_id" required>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary">Search By Thesis ID</button>
+                    </td>
+                </tr>
+            </form>
+
+
+            <form action="/search_by_author" method="post">
+                <tr>
+                    <td>Search by Author</td>
+                    <td>
+                        <div class="form-group">
+                            <select id="author" name="author" class="form-control">
+                                {% for author in authors %}
+                                    <option value="{{ author.author_id }}">{{ author.author_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary">Search by Author</button>
+                    </td>
+                </tr>
+            </form>
+
+            <form action="/search_by_supervisor" method="post">
+                <tr>
+                    <td>Search by Supervisor</td>
+                    <td>
+                        <div class="form-group">
+                            <select id="supervisor" name="supervisor" class="form-control">
+                                {% for prof in profs %}
+                                    <option value="{{ prof.prof_id }}">{{ prof.prof_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary" data-toggle="modal" data-target="#detailsInstituteModal{{ a }}">Search by Supervisor</button>
+                    </td>
+                </tr>
+            </form>
+
+            <form action="/search_by_cosupervisor" method="post">
+                <tr>
+                    <td>Search by CoSupervisor</td>
+                    <td>
+                        <div class="form-group">
+                            <select id="cosupervisor" name="cosupervisor" class="form-control">
+                                {% for prof in profs %}
+                                    <option value="{{ prof.prof_id }}">{{ prof.prof_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary">Search by CoSupervisor</button>
+                    </td>
+                </tr>
+            </form>
+
+
+            <form action="/search_by_university" method="post">
+                <tr>
+                    <td>Search by University</td>
+                    <td>
+                        <div class="form-group">
+                            <select id="university" name="university" class="form-control">
+                                {% for uni in universities %}
+                                    <option value="{{ uni.university_id }}">{{ uni.university_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary">Search by University</button>
+                    </td>
+                </tr>
+            </form>
+
+            <form action="/search_by_institute" method="post">
+                <tr>
+                    <td>Search by Institute</td>
+                    <td>
+                        <div class="form-group">
+                            <select id="institute" name="institute" class="form-control">
+                                {% for ins in institutes %}
+                                    <option value="{{ ins.institute_id }}">{{ ins.institute_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary" data-toggle="modal" data-target="#detailsInstituteModal{{ a }}">Search by University</button>
+                    </td>
+                </tr>
+            </form>
+
+            <form action="/search_by_language" method="post">
+                <tr>
+                    <td>Search by Language</td>
+                    <td>
+                        <div class="form-group">
+                            <select id="language" name="language" class="form-control">
+                                <option value="Turkish">Turkish</option>
+                                <option value="English">English</option>
+                                <option value="French">French</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-secondary">Search by Language</button>
+                    </td>
+                </tr>
+            </form>
+
+            <form action="/search_by_topic" method="post">
+                <tr>
+                    <td>Search by Topic</td>
+                    <td>
+                        <div class="form-group">
+                            <select id="topic" name="topic" class="form-control">\
+                                {% for topic in topics %}
+                                    <option value="{{ topic.topic_id }}">{{ topic.topic_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary" data-toggle="modal" data-target="#detailsInstituteModal{{ a }}">Search by Topic</button>
+                    </td>
+                </tr>
+            </form>
+
+            <form action="/search_by_keyword" method="post">
+                <tr>
+                    <td>Search by Keyword</td>
+                    <td>
+                        <div class="form-group">
+                            <select id="keyword" name="keyword" class="form-control">
+                                {% for keyword in keywords %}
+                                    <option value="{{ keyword.keyword_id }}">{{ keyword.keyword }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary" data-toggle="modal" data-target="#detailsInstituteModal{{ a }}">Search by Keyword</button>
+                    </td>
+                </tr>
+            </form>
+        </tbody>
+    </table>
+
+
+    <div class="mt-5">
+        <p>You can search by any criteria shown above, just select what you want and submit the button!</p>
+    </div>
+
+</div>
 
 {% endblock %}
