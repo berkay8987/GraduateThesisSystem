@@ -269,13 +269,17 @@ def edit_author(id):
     name = request.form.get("name")
     surname = request.form.get("surname")
     cursor.execute("UPDATE Authors SET author_name = ?, author_surname = ? WHERE author_id = ?", (name, surname, id))
+
     cursor.commit()
     return render_template("result.html", response=f"Sucessfully Edited Author => author_id = {id}", page="persons")
 
 @app.route("/delete_author/<int:id>", methods=["POST"])
 def delete_author(id):
-    cursor.execute("DELETE FROM Authors WHERE author_id = ?", id)
-    cursor.commit()
+    try:
+        cursor.execute("DELETE FROM Authors WHERE author_id = ?", id)
+        cursor.commit()
+    except pyodbc.Error as e:
+        return render_template("result.html", response=f"Failed to Delete Author => author_id = {id}\n {e}", page="persons", error=True)
     return render_template("result.html", response=f"Sucessfully Deleted Author => author_id = {id}", page="persons")
 
 @app.route("/add_prof", methods=["POST"])
@@ -403,7 +407,7 @@ def add_topic():
     # If not, add
     cursor.execute("INSERT INTO Topics (topic_name) VALUES (?)", name)
     cursor.commit()
-    return render_template("result.html", response=f"Sucessfully Added New Topic => {name} - {id}", page="topics")
+    return render_template("result.html", response=f"Sucessfully Added New Topic => {name}", page="topics")
 
 @app.route("/delete_topic/<int:id>", methods=["POST"])
 def delete_topic(id):
@@ -418,9 +422,662 @@ def edit_topic(id):
     cursor.commit()
     return render_template("result.html", response=f"Sucessfully Edited Topic => topic_id = {id}", page="topics")
 
+@app.route("/keywords")
+def keywords():
+    cursor.execute("SELECT keyword_id, keyword FROM Keywords")
+    keyword_content = cursor.fetchall()
+    cols = ["keyword_id", "keyword_name"]
+    keywords = [dict(zip(cols, c)) for c in keyword_content]
+
+    return render_template("keywords.html", keywords=keywords)
+
+@app.route("/add_keyword", methods=["POST"])
+def add_keyword():
+    keyword = request.form.get("name")
+    
+    # Check if keyword already exists
+    cursor.execute("SELECT keyword_id FROM Keywords WHERE keyword = ?", keyword)
+    kid = cursor.fetchall()
+
+    if kid:
+        return render_template("result.html", response=f"Keyword Already Exists! => keyword_id = {kid[0][0]}", page="keywords", error=True)
+
+    cursor.execute("INSERT INTO Keywords (keyword) VALUES (?)", keyword)
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Added New Keyword => {keyword}", page="keywords")
+
+@app.route("/edit_keyword/<int:id>", methods=["POST"])
+def edit_keyword(id):
+    keyword = request.form.get("name")
+    cursor.execute("UPDATE Keywords SET keyword = ? WHERE keyword_id = ?", (keyword, id))
+    cursor.commit()
+    return render_template("result.html", response=f"Sucessfully Edited Keyword => keyword_id = {id}", page="keywords")
+
+@app.route("/delete_keyword/<int:id>", methods=["POST"])
+def delete_keyword(id):
+    try:
+        cursor.execute("DELETE FROM Keywords WHERE keyword_id = ?", id)
+        cursor.commit()
+    except pyodbc.Error as e:
+        return render_template("result.html", response="Cannot delete keyword as it's being used by (a) thesis.", page="keywords", error=True)
+    return render_template("result.html", response=f"Sucessfully Deleted Keyword => keyword_id = {id}", page="keywords")
+
 @app.route("/search")
 def search():
-    return render_template("search.html")
+    cursor.execute("SELECT author_id, CONCAT(author_name, ' ', author_surname) FROM Authors")
+    author_content = cursor.fetchall()
+    cols = ["author_id", "author_name"]
+    authors = [dict(zip(cols, c)) for c in author_content] 
+
+    # For supervisors and cosupervisors
+    cursor.execute("SELECT prof_id, CONCAT(prof_title, ' ', prof_name, ' ', prof_surname) FROM Professors")
+    profs_content = cursor.fetchall()
+    cols = ["prof_id", "prof_name"]
+    profs = [dict(zip(cols, c)) for c in profs_content]
+
+    cursor.execute("SELECT university_id, university_name FROM Universities")
+    university_content = cursor.fetchall()
+    cols = ["university_id", "university_name"]
+    universities = [dict(zip(cols, c)) for c in university_content]
+
+    cursor.execute("SELECT institute_id, institute_name FROM Institutes")
+    institute_content = cursor.fetchall()
+    cols = ["institute_id", "institute_name"]
+    institutes = [dict(zip(cols, c)) for c in institute_content]
+
+    cursor.execute("SELECT keyword_id, keyword FROM Keywords")
+    keyword_content = cursor.fetchall()
+    cols = ["keyword_id", "keyword"]
+    keywords = [dict(zip(cols, c)) for c in keyword_content]
+
+    cursor.execute("SELECT topic_id, topic_name FROM Topics")
+    topic_content = cursor.fetchall()
+    cols = ["topic_id", "topic_name"]
+    topics = [dict(zip(cols, c)) for c in topic_content]
+    
+    return render_template("search.html", authors=authors, profs=profs, universities=universities, institutes=institutes, keywords=keywords, topics=topics)
+
+@app.route("/search_by_thesis_id/", methods=["POST"])
+def search_by_thesis_id():
+    thesis_id = request.form.get("thesis_id")
+
+    cursor.execute("""
+        SELECT 
+            T.thesis_id,
+            T.title AS thesis_title,
+            A.author_name + ' ' + A.author_surname AS author_full_name,
+            T.abstract AS thesis_abstract,
+            P1.prof_title + ' ' + P1.prof_name + ' ' + P1.prof_surname AS supervisor_full_name,
+            P2.prof_title + ' ' + P2.prof_name + ' ' + P2.prof_surname AS cosupervisor_full_name,
+            T.type AS thesis_type,
+            U.university_name,
+            I.institute_name,
+            T.submission_date,
+            T.page_num,
+            T.year,
+            T.language,
+            STRING_AGG(K.keyword, ', ') AS thesis_keywords,
+            STRING_AGG(Tto.topic_name, ', ') AS thesis_topics
+        FROM 
+            Theses T
+        JOIN 
+            Authors A ON T.author_id = A.author_id
+        LEFT JOIN 
+            Supervisors S ON T.thesis_id = S.thesis_id
+        LEFT JOIN 
+            Professors P1 ON S.prof_id = P1.prof_id
+        LEFT JOIN 
+            CoSupervisors CS ON T.thesis_id = CS.thesis_id
+        LEFT JOIN 
+            Professors P2 ON CS.prof_id = P2.prof_id
+        JOIN 
+            Universities U ON T.university_id = U.university_id
+        JOIN 
+            Institutes I ON T.institute_id = I.institute_id
+        LEFT JOIN 
+            ThesisKeywords TK ON T.thesis_id = TK.thesis_id
+        LEFT JOIN 
+            Keywords K ON TK.keyword_id = K.keyword_id
+        LEFT JOIN 
+            ThesisTopics TT ON T.thesis_id = TT.thesis_id
+        LEFT JOIN 
+            Topics Tto ON TT.topic_id = Tto.topic_id
+        WHERE 
+            T.thesis_id = ?
+        GROUP BY 
+            T.thesis_id, T.title, A.author_name, A.author_surname, T.abstract, 
+            P1.prof_title, P1.prof_name, P1.prof_surname, 
+            P2.prof_title, P2.prof_name, P2.prof_surname, 
+            T.type, U.university_name, I.institute_name, 
+            T.submission_date, T.page_num, T.year, T.language
+        ORDER BY 
+            T.thesis_id;
+    """, thesis_id)
+    detailed_content= cursor.fetchall()
+    cols = [desc[0] for desc in cursor.description]
+    detailed_theses = [dict(zip(cols, c)) for c in detailed_content]
+
+    return render_template("search_result.html", detailed_theses=detailed_theses)
+
+@app.route("/search_by_author", methods=["POST"])
+def search_by_author():
+    author = request.form.get("author")
+
+    cursor.execute("""
+        SELECT 
+            T.thesis_id,
+            T.title AS thesis_title,
+            A.author_name + ' ' + A.author_surname AS author_full_name,
+            T.abstract AS thesis_abstract,
+            P1.prof_title + ' ' + P1.prof_name + ' ' + P1.prof_surname AS supervisor_full_name,
+            P2.prof_title + ' ' + P2.prof_name + ' ' + P2.prof_surname AS cosupervisor_full_name,
+            T.type AS thesis_type,
+            U.university_name,
+            I.institute_name,
+            T.submission_date,
+            T.page_num,
+            T.year,
+            T.language,
+            STRING_AGG(K.keyword, ', ') AS thesis_keywords,
+            STRING_AGG(Tto.topic_name, ', ') AS thesis_topics
+        FROM 
+            Theses T
+        JOIN 
+            Authors A ON T.author_id = A.author_id
+        LEFT JOIN 
+            Supervisors S ON T.thesis_id = S.thesis_id
+        LEFT JOIN 
+            Professors P1 ON S.prof_id = P1.prof_id
+        LEFT JOIN 
+            CoSupervisors CS ON T.thesis_id = CS.thesis_id
+        LEFT JOIN 
+            Professors P2 ON CS.prof_id = P2.prof_id
+        JOIN 
+            Universities U ON T.university_id = U.university_id
+        JOIN 
+            Institutes I ON T.institute_id = I.institute_id
+        LEFT JOIN 
+            ThesisKeywords TK ON T.thesis_id = TK.thesis_id
+        LEFT JOIN 
+            Keywords K ON TK.keyword_id = K.keyword_id
+        LEFT JOIN 
+            ThesisTopics TT ON T.thesis_id = TT.thesis_id
+        LEFT JOIN 
+            Topics Tto ON TT.topic_id = Tto.topic_id
+        WHERE 
+            T.author_id = ?
+        GROUP BY 
+            T.thesis_id, T.title, A.author_name, A.author_surname, T.abstract, 
+            P1.prof_title, P1.prof_name, P1.prof_surname, 
+            P2.prof_title, P2.prof_name, P2.prof_surname, 
+            T.type, U.university_name, I.institute_name, 
+            T.submission_date, T.page_num, T.year, T.language
+        ORDER BY 
+            T.thesis_id;
+    """, author)
+    detailed_content= cursor.fetchall()
+    cols = [desc[0] for desc in cursor.description]
+    detailed_theses = [dict(zip(cols, c)) for c in detailed_content]
+
+    return render_template("search_result.html", detailed_theses=detailed_theses)
+
+@app.route("/search_by_supervisor", methods=["POST"])
+def search_by_supervisor():
+    prof = request.form.get("supervisor")
+
+    cursor.execute("SELECT thesis_id FROM Supervisors WHERE prof_id = ?", prof)
+    thesis_ids = cursor.fetchall()
+
+    detailed_content = []
+    for t in thesis_ids:
+        
+        cursor.execute("""
+            SELECT 
+                T.thesis_id,
+                T.title AS thesis_title,
+                A.author_name + ' ' + A.author_surname AS author_full_name,
+                T.abstract AS thesis_abstract,
+                P1.prof_title + ' ' + P1.prof_name + ' ' + P1.prof_surname AS supervisor_full_name,
+                P2.prof_title + ' ' + P2.prof_name + ' ' + P2.prof_surname AS cosupervisor_full_name,
+                T.type AS thesis_type,
+                U.university_name,
+                I.institute_name,
+                T.submission_date,
+                T.page_num,
+                T.year,
+                T.language,
+                STRING_AGG(K.keyword, ', ') AS thesis_keywords,
+                STRING_AGG(Tto.topic_name, ', ') AS thesis_topics
+            FROM 
+                Theses T
+            JOIN 
+                Authors A ON T.author_id = A.author_id
+            LEFT JOIN 
+                Supervisors S ON T.thesis_id = S.thesis_id
+            LEFT JOIN 
+                Professors P1 ON S.prof_id = P1.prof_id
+            LEFT JOIN 
+                CoSupervisors CS ON T.thesis_id = CS.thesis_id
+            LEFT JOIN 
+                Professors P2 ON CS.prof_id = P2.prof_id
+            JOIN 
+                Universities U ON T.university_id = U.university_id
+            JOIN 
+                Institutes I ON T.institute_id = I.institute_id
+            LEFT JOIN 
+                ThesisKeywords TK ON T.thesis_id = TK.thesis_id
+            LEFT JOIN 
+                Keywords K ON TK.keyword_id = K.keyword_id
+            LEFT JOIN 
+                ThesisTopics TT ON T.thesis_id = TT.thesis_id
+            LEFT JOIN 
+                Topics Tto ON TT.topic_id = Tto.topic_id
+            WHERE 
+                T.thesis_id = ?
+            GROUP BY 
+                T.thesis_id, T.title, A.author_name, A.author_surname, T.abstract, 
+                P1.prof_title, P1.prof_name, P1.prof_surname, 
+                P2.prof_title, P2.prof_name, P2.prof_surname, 
+                T.type, U.university_name, I.institute_name, 
+                T.submission_date, T.page_num, T.year, T.language
+            ORDER BY 
+                T.thesis_id;
+        """, t[0])
+        detailed_content += cursor.fetchall()
+    cols = [desc[0] for desc in cursor.description]
+    detailed_theses = [dict(zip(cols, c)) for c in detailed_content]
+
+    return render_template("search_result.html", detailed_theses=detailed_theses)
+
+@app.route("/search_by_cosupervisor", methods=["POST"])
+def search_by_cosupervisor():
+    prof = request.form.get("cosupervisor")
+
+    cursor.execute("SELECT thesis_id FROM CoSupervisors WHERE prof_id = ?", prof)
+    thesis_ids = cursor.fetchall()
+
+    detailed_content = []
+    for t in thesis_ids:
+        
+        cursor.execute("""
+            SELECT 
+                T.thesis_id,
+                T.title AS thesis_title,
+                A.author_name + ' ' + A.author_surname AS author_full_name,
+                T.abstract AS thesis_abstract,
+                P1.prof_title + ' ' + P1.prof_name + ' ' + P1.prof_surname AS supervisor_full_name,
+                P2.prof_title + ' ' + P2.prof_name + ' ' + P2.prof_surname AS cosupervisor_full_name,
+                T.type AS thesis_type,
+                U.university_name,
+                I.institute_name,
+                T.submission_date,
+                T.page_num,
+                T.year,
+                T.language,
+                STRING_AGG(K.keyword, ', ') AS thesis_keywords,
+                STRING_AGG(Tto.topic_name, ', ') AS thesis_topics
+            FROM 
+                Theses T
+            JOIN 
+                Authors A ON T.author_id = A.author_id
+            LEFT JOIN 
+                Supervisors S ON T.thesis_id = S.thesis_id
+            LEFT JOIN 
+                Professors P1 ON S.prof_id = P1.prof_id
+            LEFT JOIN 
+                CoSupervisors CS ON T.thesis_id = CS.thesis_id
+            LEFT JOIN 
+                Professors P2 ON CS.prof_id = P2.prof_id
+            JOIN 
+                Universities U ON T.university_id = U.university_id
+            JOIN 
+                Institutes I ON T.institute_id = I.institute_id
+            LEFT JOIN 
+                ThesisKeywords TK ON T.thesis_id = TK.thesis_id
+            LEFT JOIN 
+                Keywords K ON TK.keyword_id = K.keyword_id
+            LEFT JOIN 
+                ThesisTopics TT ON T.thesis_id = TT.thesis_id
+            LEFT JOIN 
+                Topics Tto ON TT.topic_id = Tto.topic_id
+            WHERE 
+                T.thesis_id = ?
+            GROUP BY 
+                T.thesis_id, T.title, A.author_name, A.author_surname, T.abstract, 
+                P1.prof_title, P1.prof_name, P1.prof_surname, 
+                P2.prof_title, P2.prof_name, P2.prof_surname, 
+                T.type, U.university_name, I.institute_name, 
+                T.submission_date, T.page_num, T.year, T.language
+            ORDER BY 
+                T.thesis_id;
+        """, t[0])
+        detailed_content += cursor.fetchall()
+    cols = [desc[0] for desc in cursor.description]
+    detailed_theses = [dict(zip(cols, c)) for c in detailed_content]
+
+    return render_template("search_result.html", detailed_theses=detailed_theses)
+
+@app.route("/search_by_language", methods=["POST"])
+def search_by_language():
+    language = request.form.get("language")
+
+    cursor.execute("""
+        SELECT 
+            T.thesis_id,
+            T.title AS thesis_title,
+            A.author_name + ' ' + A.author_surname AS author_full_name,
+            T.abstract AS thesis_abstract,
+            P1.prof_title + ' ' + P1.prof_name + ' ' + P1.prof_surname AS supervisor_full_name,
+            P2.prof_title + ' ' + P2.prof_name + ' ' + P2.prof_surname AS cosupervisor_full_name,
+            T.type AS thesis_type,
+            U.university_name,
+            I.institute_name,
+            T.submission_date,
+            T.page_num,
+            T.year,
+            T.language,
+            STRING_AGG(K.keyword, ', ') AS thesis_keywords,
+            STRING_AGG(Tto.topic_name, ', ') AS thesis_topics
+        FROM 
+            Theses T
+        JOIN 
+            Authors A ON T.author_id = A.author_id
+        LEFT JOIN 
+            Supervisors S ON T.thesis_id = S.thesis_id
+        LEFT JOIN 
+            Professors P1 ON S.prof_id = P1.prof_id
+        LEFT JOIN 
+            CoSupervisors CS ON T.thesis_id = CS.thesis_id
+        LEFT JOIN 
+            Professors P2 ON CS.prof_id = P2.prof_id
+        JOIN 
+            Universities U ON T.university_id = U.university_id
+        JOIN 
+            Institutes I ON T.institute_id = I.institute_id
+        LEFT JOIN 
+            ThesisKeywords TK ON T.thesis_id = TK.thesis_id
+        LEFT JOIN 
+            Keywords K ON TK.keyword_id = K.keyword_id
+        LEFT JOIN 
+            ThesisTopics TT ON T.thesis_id = TT.thesis_id
+        LEFT JOIN 
+            Topics Tto ON TT.topic_id = Tto.topic_id
+        WHERE 
+            T.language = ?    
+        GROUP BY 
+            T.thesis_id, T.title, A.author_name, A.author_surname, T.abstract, 
+            P1.prof_title, P1.prof_name, P1.prof_surname, 
+            P2.prof_title, P2.prof_name, P2.prof_surname, 
+            T.type, U.university_name, I.institute_name, 
+            T.submission_date, T.page_num, T.year, T.language
+        ORDER BY 
+            T.thesis_id;
+    """, language)
+    detailed_content= cursor.fetchall()
+    cols = [desc[0] for desc in cursor.description]
+    detailed_theses = [dict(zip(cols, c)) for c in detailed_content]
+
+    return render_template("search_result.html", detailed_theses=detailed_theses)
+
+@app.route("/search_by_university", methods=["POST"])
+def search_by_university():
+    uni = request.form.get("university")
+
+    cursor.execute("""
+        SELECT 
+            T.thesis_id,
+            T.title AS thesis_title,
+            A.author_name + ' ' + A.author_surname AS author_full_name,
+            T.abstract AS thesis_abstract,
+            P1.prof_title + ' ' + P1.prof_name + ' ' + P1.prof_surname AS supervisor_full_name,
+            P2.prof_title + ' ' + P2.prof_name + ' ' + P2.prof_surname AS cosupervisor_full_name,
+            T.type AS thesis_type,
+            U.university_name,
+            I.institute_name,
+            T.submission_date,
+            T.page_num,
+            T.year,
+            T.language,
+            STRING_AGG(K.keyword, ', ') AS thesis_keywords,
+            STRING_AGG(Tto.topic_name, ', ') AS thesis_topics
+        FROM 
+            Theses T
+        JOIN 
+            Authors A ON T.author_id = A.author_id
+        LEFT JOIN 
+            Supervisors S ON T.thesis_id = S.thesis_id
+        LEFT JOIN 
+            Professors P1 ON S.prof_id = P1.prof_id
+        LEFT JOIN 
+            CoSupervisors CS ON T.thesis_id = CS.thesis_id
+        LEFT JOIN 
+            Professors P2 ON CS.prof_id = P2.prof_id
+        JOIN 
+            Universities U ON T.university_id = U.university_id
+        JOIN 
+            Institutes I ON T.institute_id = I.institute_id
+        LEFT JOIN 
+            ThesisKeywords TK ON T.thesis_id = TK.thesis_id
+        LEFT JOIN 
+            Keywords K ON TK.keyword_id = K.keyword_id
+        LEFT JOIN 
+            ThesisTopics TT ON T.thesis_id = TT.thesis_id
+        LEFT JOIN 
+            Topics Tto ON TT.topic_id = Tto.topic_id
+        WHERE 
+            T.university_id = ?    
+        GROUP BY 
+            T.thesis_id, T.title, A.author_name, A.author_surname, T.abstract, 
+            P1.prof_title, P1.prof_name, P1.prof_surname, 
+            P2.prof_title, P2.prof_name, P2.prof_surname, 
+            T.type, U.university_name, I.institute_name, 
+            T.submission_date, T.page_num, T.year, T.language
+        ORDER BY 
+            T.thesis_id;
+    """, uni)
+    detailed_content= cursor.fetchall()
+    cols = [desc[0] for desc in cursor.description]
+    detailed_theses = [dict(zip(cols, c)) for c in detailed_content]
+
+    return render_template("search_result.html", detailed_theses=detailed_theses)
+
+@app.route("/search_by_institute", methods=["POST"])
+def search_by_institute():
+    ins = request.form.get("institute")
+
+    cursor.execute("""
+        SELECT 
+            T.thesis_id,
+            T.title AS thesis_title,
+            A.author_name + ' ' + A.author_surname AS author_full_name,
+            T.abstract AS thesis_abstract,
+            P1.prof_title + ' ' + P1.prof_name + ' ' + P1.prof_surname AS supervisor_full_name,
+            P2.prof_title + ' ' + P2.prof_name + ' ' + P2.prof_surname AS cosupervisor_full_name,
+            T.type AS thesis_type,
+            U.university_name,
+            I.institute_name,
+            T.submission_date,
+            T.page_num,
+            T.year,
+            T.language,
+            STRING_AGG(K.keyword, ', ') AS thesis_keywords,
+            STRING_AGG(Tto.topic_name, ', ') AS thesis_topics
+        FROM 
+            Theses T
+        JOIN 
+            Authors A ON T.author_id = A.author_id
+        LEFT JOIN 
+            Supervisors S ON T.thesis_id = S.thesis_id
+        LEFT JOIN 
+            Professors P1 ON S.prof_id = P1.prof_id
+        LEFT JOIN 
+            CoSupervisors CS ON T.thesis_id = CS.thesis_id
+        LEFT JOIN 
+            Professors P2 ON CS.prof_id = P2.prof_id
+        JOIN 
+            Universities U ON T.university_id = U.university_id
+        JOIN 
+            Institutes I ON T.institute_id = I.institute_id
+        LEFT JOIN 
+            ThesisKeywords TK ON T.thesis_id = TK.thesis_id
+        LEFT JOIN 
+            Keywords K ON TK.keyword_id = K.keyword_id
+        LEFT JOIN 
+            ThesisTopics TT ON T.thesis_id = TT.thesis_id
+        LEFT JOIN 
+            Topics Tto ON TT.topic_id = Tto.topic_id
+        WHERE 
+            T.institute_id = ?    
+        GROUP BY 
+            T.thesis_id, T.title, A.author_name, A.author_surname, T.abstract, 
+            P1.prof_title, P1.prof_name, P1.prof_surname, 
+            P2.prof_title, P2.prof_name, P2.prof_surname, 
+            T.type, U.university_name, I.institute_name, 
+            T.submission_date, T.page_num, T.year, T.language
+        ORDER BY 
+            T.thesis_id;
+    """, ins)
+    detailed_content= cursor.fetchall()
+    cols = [desc[0] for desc in cursor.description]
+    detailed_theses = [dict(zip(cols, c)) for c in detailed_content]
+
+    return render_template("search_result.html", detailed_theses=detailed_theses)
+
+@app.route("/search_by_topic", methods=["POST"])
+def search_by_topic():
+    topic_id = request.form.get("topic")
+
+    cursor.execute("SELECT thesis_id FROM ThesisTopics WHERE topic_id = ?", topic_id)
+    thesis_ids = cursor.fetchall()
+
+    detailed_content = []
+    for t in thesis_ids:
+        
+        cursor.execute("""
+            SELECT 
+                T.thesis_id,
+                T.title AS thesis_title,
+                A.author_name + ' ' + A.author_surname AS author_full_name,
+                T.abstract AS thesis_abstract,
+                P1.prof_title + ' ' + P1.prof_name + ' ' + P1.prof_surname AS supervisor_full_name,
+                P2.prof_title + ' ' + P2.prof_name + ' ' + P2.prof_surname AS cosupervisor_full_name,
+                T.type AS thesis_type,
+                U.university_name,
+                I.institute_name,
+                T.submission_date,
+                T.page_num,
+                T.year,
+                T.language,
+                STRING_AGG(K.keyword, ', ') AS thesis_keywords,
+                STRING_AGG(Tto.topic_name, ', ') AS thesis_topics
+            FROM 
+                Theses T
+            JOIN 
+                Authors A ON T.author_id = A.author_id
+            LEFT JOIN 
+                Supervisors S ON T.thesis_id = S.thesis_id
+            LEFT JOIN 
+                Professors P1 ON S.prof_id = P1.prof_id
+            LEFT JOIN 
+                CoSupervisors CS ON T.thesis_id = CS.thesis_id
+            LEFT JOIN 
+                Professors P2 ON CS.prof_id = P2.prof_id
+            JOIN 
+                Universities U ON T.university_id = U.university_id
+            JOIN 
+                Institutes I ON T.institute_id = I.institute_id
+            LEFT JOIN 
+                ThesisKeywords TK ON T.thesis_id = TK.thesis_id
+            LEFT JOIN 
+                Keywords K ON TK.keyword_id = K.keyword_id
+            LEFT JOIN 
+                ThesisTopics TT ON T.thesis_id = TT.thesis_id
+            LEFT JOIN 
+                Topics Tto ON TT.topic_id = Tto.topic_id
+            WHERE 
+                T.thesis_id = ?
+            GROUP BY 
+                T.thesis_id, T.title, A.author_name, A.author_surname, T.abstract, 
+                P1.prof_title, P1.prof_name, P1.prof_surname, 
+                P2.prof_title, P2.prof_name, P2.prof_surname, 
+                T.type, U.university_name, I.institute_name, 
+                T.submission_date, T.page_num, T.year, T.language
+            ORDER BY 
+                T.thesis_id;
+        """, t[0])
+        detailed_content += cursor.fetchall()
+    cols = [desc[0] for desc in cursor.description]
+    detailed_theses = [dict(zip(cols, c)) for c in detailed_content]
+
+    return render_template("search_result.html", detailed_theses=detailed_theses)
+
+@app.route("/search_by_keyword", methods=["POST"])
+def search_by_keyword():
+    keyword_id = request.form.get("keyword")
+
+    cursor.execute("SELECT thesis_id FROM ThesisKeywords WHERE keyword_id = ?", keyword_id)
+    thesis_ids = cursor.fetchall()
+
+    detailed_content = []
+    for t in thesis_ids:
+        
+        cursor.execute("""
+            SELECT 
+                T.thesis_id,
+                T.title AS thesis_title,
+                A.author_name + ' ' + A.author_surname AS author_full_name,
+                T.abstract AS thesis_abstract,
+                P1.prof_title + ' ' + P1.prof_name + ' ' + P1.prof_surname AS supervisor_full_name,
+                P2.prof_title + ' ' + P2.prof_name + ' ' + P2.prof_surname AS cosupervisor_full_name,
+                T.type AS thesis_type,
+                U.university_name,
+                I.institute_name,
+                T.submission_date,
+                T.page_num,
+                T.year,
+                T.language,
+                STRING_AGG(K.keyword, ', ') AS thesis_keywords,
+                STRING_AGG(Tto.topic_name, ', ') AS thesis_topics
+            FROM 
+                Theses T
+            JOIN 
+                Authors A ON T.author_id = A.author_id
+            LEFT JOIN 
+                Supervisors S ON T.thesis_id = S.thesis_id
+            LEFT JOIN 
+                Professors P1 ON S.prof_id = P1.prof_id
+            LEFT JOIN 
+                CoSupervisors CS ON T.thesis_id = CS.thesis_id
+            LEFT JOIN 
+                Professors P2 ON CS.prof_id = P2.prof_id
+            JOIN 
+                Universities U ON T.university_id = U.university_id
+            JOIN 
+                Institutes I ON T.institute_id = I.institute_id
+            LEFT JOIN 
+                ThesisKeywords TK ON T.thesis_id = TK.thesis_id
+            LEFT JOIN 
+                Keywords K ON TK.keyword_id = K.keyword_id
+            LEFT JOIN 
+                ThesisTopics TT ON T.thesis_id = TT.thesis_id
+            LEFT JOIN 
+                Topics Tto ON TT.topic_id = Tto.topic_id
+            WHERE 
+                T.thesis_id = ?
+            GROUP BY 
+                T.thesis_id, T.title, A.author_name, A.author_surname, T.abstract, 
+                P1.prof_title, P1.prof_name, P1.prof_surname, 
+                P2.prof_title, P2.prof_name, P2.prof_surname, 
+                T.type, U.university_name, I.institute_name, 
+                T.submission_date, T.page_num, T.year, T.language
+            ORDER BY 
+                T.thesis_id;
+        """, t[0])
+        detailed_content += cursor.fetchall()
+    cols = [desc[0] for desc in cursor.description]
+    detailed_theses = [dict(zip(cols, c)) for c in detailed_content]
+
+    return render_template("search_result.html", detailed_theses=detailed_theses)
 
 if __name__ == "__main__":
     app.run(debug=True)
